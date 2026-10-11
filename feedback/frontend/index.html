@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sentima v1.0 – Review & Survey Sentiment Analyzer</title>
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Chart.js 4 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-[#0b0f19] text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- ==================== TOP NAVIGATION HEADER ==================== -->
+  <header class="bg-[#0e1726]/90 backdrop-blur-md border-b border-slate-800/80 sticky top-0 z-40 transition-all shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 gap-3">
+        
+        <!-- Brand Logo & Title -->
+        <div class="flex items-center space-x-3 cursor-pointer shrink-0" onclick="switchTab('dashboard')">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/25 ring-1 ring-white/10 hover:scale-105 transition-transform">
+            <i class="fa-solid fa-chart-simple text-white text-lg"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="font-extrabold text-xl text-white tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">Sentima</span>
+              <span class="text-[11px] font-mono bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-full border border-indigo-500/30 font-semibold">v1.0</span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-medium">Review & Survey Sentiment Analyzer</p>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="hidden md:flex items-center space-x-1.5 bg-slate-900/60 p-1 rounded-xl border border-slate-800">
+          <button id="navTabDashboard" onclick="switchTab('dashboard')"
+            class="nav-tab active flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all">
+            <i class="fa-solid fa-chart-pie text-xs"></i>
+            <span>Dashboard</span>
+          </button>
+          <button id="navTabReviews" onclick="switchTab('reviews')"
+            class="nav-tab flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white hover:bg-slate-800/60">
+            <i class="fa-regular fa-comment-dots text-xs"></i>
+            <span>Reviews & Surveys</span>
+          </button>
+          <button id="navTabImprovements" onclick="switchTab('improvements')"
+            class="nav-tab flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white hover:bg-slate-800/60">
+            <i class="fa-regular fa-lightbulb text-xs"></i>
+            <span>Improvement Areas</span>
+          </button>
+        </nav>
+
+        <!-- Right Side Utility Controls -->
+        <div class="flex items-center space-x-2.5">
+          <!-- Database Engine Status Pill -->
+          <button onclick="openModal('dbModal')" 
+            class="hidden lg:flex items-center space-x-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer shadow-sm">
+            <i class="fa-solid fa-database text-[11px]"></i>
+            <span id="dbStatusPill">MySQL / SQLite Ready</span>
+          </button>
+
+          <!-- Refresh Button -->
+          <button id="refreshBtn" onclick="refreshData()" title="Refresh Dashboard Data"
+            class="w-9 h-9 rounded-lg bg-slate-800/90 hover:bg-slate-700 border border-slate-700/80 text-slate-300 hover:text-white flex items-center justify-center text-xs transition-all cursor-pointer">
+            <i class="fa-solid fa-arrows-rotate" id="refreshIcon"></i>
+          </button>
+
+          <!-- Bulk Import Button -->
+          <button onclick="openModal('bulkModal')"
+            class="hidden sm:flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 hover:text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-sm cursor-pointer">
+            <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
+            <span>Bulk Import</span>
+          </button>
+
+          <!-- Add Feedback Primary Button -->
+          <button onclick="openModal('addModal')"
+            class="flex items-center space-x-2 bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-700 hover:from-purple-500 hover:to-indigo-600 text-white px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 ring-1 ring-white/10 cursor-pointer active:scale-95">
+            <i class="fa-solid fa-circle-plus text-xs"></i>
+            <span>Add Feedback</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Mobile Subnav Bar -->
+      <div class="flex md:hidden py-2 border-t border-slate-800/60 overflow-x-auto space-x-2 scrollbar-none">
+        <button onclick="switchTab('dashboard')" class="mobile-nav-tab active px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap">Dashboard</button>
+        <button onclick="switchTab('reviews')" class="mobile-nav-tab px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap text-slate-400">Reviews & Surveys</button>
+        <button onclick="switchTab('improvements')" class="mobile-nav-tab px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap text-slate-400">Improvement Areas</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN APPLICATION CONTENT ==================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- TAB 1: DASHBOARD OVERVIEW -->
+    <div id="viewDashboard" class="tab-view space-y-6 animate-fadeIn">
+      
+      <!-- Empty State Quick Seed Banner (Shown when no data) -->
+      <div id="zeroStateBanner" class="hidden bg-gradient-to-r from-indigo-950/80 via-purple-950/80 to-slate-900 border border-indigo-500/40 rounded-2xl p-5 shadow-xl flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="space-y-1 text-center sm:text-left">
+          <h4 class="text-base font-bold text-white flex items-center justify-center sm:justify-start gap-2">
+            <i class="fa-solid fa-lightbulb text-amber-400"></i>
+            <span>Get Started: Load Sample Reviews & Surveys</span>
+          </h4>
+          <p class="text-xs text-slate-300">
+            Instantly populate real-world customer reviews across App Store, Surveys & Support tickets with sentiment analysis and improvement tagging.
+          </p>
+        </div>
+        <button onclick="seedSampleData()"
+          class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/30 transition-all shrink-0 cursor-pointer">
+          <i class="fa-solid fa-bolt mr-1"></i> Load Sample Reviews
+        </button>
+      </div>
+
+      <!-- Top Row: 4 Metric KPI Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Total Feedback Card -->
+        <div class="kpi-card bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 shadow-lg relative overflow-hidden group hover:border-slate-600 transition-all">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Feedback</p>
+              <h3 class="text-3xl font-extrabold text-white mt-1" id="kpiTotal">0</h3>
+              <p class="text-xs text-indigo-400 mt-2 flex items-center gap-1.5 font-medium">
+                <i class="fa-solid fa-arrow-trend-up text-[10px]"></i>
+                <span id="kpiTotalSub">Surveys & Reviews Analyzed</span>
+              </p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform shadow-inner">
+              <i class="fa-solid fa-quote-right text-lg"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Positive Sentiment Card -->
+        <div class="kpi-card bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 shadow-lg relative overflow-hidden group hover:border-slate-600 transition-all">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Positive Sentiment</p>
+              <h3 class="text-3xl font-extrabold text-emerald-400 mt-1" id="kpiPositive">0%</h3>
+              <p class="text-xs text-emerald-500/90 mt-2 font-medium" id="kpiPositiveSub">
+                0 satisfied customer inputs
+              </p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform shadow-inner">
+              <i class="fa-regular fa-face-smile text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Negative / Issues Card -->
+        <div class="kpi-card bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 shadow-lg relative overflow-hidden group hover:border-slate-600 transition-all">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Negative / Issues</p>
+              <h3 class="text-3xl font-extrabold text-rose-400 mt-1" id="kpiNegative">0%</h3>
+              <p class="text-xs text-rose-400/90 mt-2 font-medium flex items-center gap-1.5" id="kpiNegativeSub">
+                <i class="fa-solid fa-triangle-exclamation text-[10px]"></i> 0 items need attention
+              </p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform shadow-inner">
+              <i class="fa-regular fa-face-frown text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Avg Customer Score Card -->
+        <div class="kpi-card bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 shadow-lg relative overflow-hidden group hover:border-slate-600 transition-all">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Avg Customer Score</p>
+              <div class="flex items-baseline gap-1 mt-1">
+                <h3 class="text-3xl font-extrabold text-amber-400" id="kpiScore">0.0</h3>
+                <span class="text-xs text-slate-400 font-semibold">/ 5.0</span>
+              </div>
+              <div class="text-amber-400 text-xs mt-2 flex items-center space-x-1" id="kpiStars">
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-regular fa-star"></i>
+                <i class="fa-regular fa-star"></i>
+              </div>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform shadow-inner">
+              <i class="fa-regular fa-star text-xl"></i>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Middle Row: 2 Interactive Charts -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Chart: Sentiment Ratio (NLP Distribution) -->
+        <div class="lg:col-span-5 bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span>Sentiment Ratio</span>
+              <span class="text-xs font-normal text-slate-400">(NLP Distribution)</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5">Overall proportion of positive, neutral, and negative feedback.</p>
+          </div>
+
+          <!-- Doughnut Container -->
+          <div class="relative my-4 flex items-center justify-center h-56">
+            <canvas id="sentimentDoughnutChart"></canvas>
+          </div>
+
+          <!-- Bottom Micro Metrics Pills -->
+          <div class="grid grid-cols-3 gap-2.5 pt-3 border-t border-slate-700/60 text-center">
+            <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-xl py-2 px-1">
+              <span class="text-[10px] uppercase font-bold text-emerald-400 tracking-wider block">Positive</span>
+              <span class="text-base font-extrabold text-emerald-300" id="pillPosCount">0</span>
+            </div>
+            <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl py-2 px-1">
+              <span class="text-[10px] uppercase font-bold text-amber-400 tracking-wider block">Neutral</span>
+              <span class="text-base font-extrabold text-amber-300" id="pillNeuCount">0</span>
+            </div>
+            <div class="bg-rose-500/10 border border-rose-500/20 rounded-xl py-2 px-1">
+              <span class="text-[10px] uppercase font-bold text-rose-400 tracking-wider block">Negative</span>
+              <span class="text-base font-extrabold text-rose-300" id="pillNegCount">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Chart: Identified Improvement Areas -->
+        <div class="lg:col-span-7 bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
+          <div class="flex items-start justify-between">
+            <div>
+              <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-lightbulb text-amber-400"></i>
+                <span>Identified Improvement Areas</span>
+              </h3>
+              <p class="text-xs text-slate-400 mt-0.5">Key topics extracted from negative and feature feedback.</p>
+            </div>
+            <button onclick="switchTab('improvements')"
+              class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 transition-colors">
+              <span>Manage All</span>
+              <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </button>
+          </div>
+
+          <!-- Bar Chart Container -->
+          <div class="relative my-4 h-56">
+            <canvas id="areasBarChart"></canvas>
+          </div>
+
+          <!-- Footer Metadata -->
+          <div class="flex items-center justify-between pt-3 border-t border-slate-700/60 text-[11px] text-slate-400">
+            <span class="flex items-center gap-1.5">
+              <i class="fa-solid fa-wand-magic-sparkles text-indigo-400"></i>
+              <span>Extracted automatically via NLP aspect analysis</span>
+            </span>
+            <span class="font-mono font-semibold text-slate-300" id="categoriesTaggedCount">6 Categories Tagged</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Row: Priority Focus List & Live Stream -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Priority Improvement Focus Column -->
+        <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 shadow-lg space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-base font-bold text-white">Priority Improvement Focus</h3>
+              <p class="text-xs text-slate-400">Categories requiring product or service action</p>
+            </div>
+            <button onclick="switchTab('improvements')"
+              class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 transition-colors">
+              <span>View Details</span>
+              <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </button>
+          </div>
+
+          <div id="priorityFocusList" class="space-y-2.5">
+            <!-- Dynamically Rendered Priority Items -->
+            <div class="text-center py-6 text-slate-400 text-xs">Loading improvement focus items...</div>
+          </div>
+        </div>
+
+        <!-- Live Feedback Stream Column -->
+        <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 shadow-lg space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-base font-bold text-white">Live Feedback Stream</h3>
+              <p class="text-xs text-slate-400">Latest customer reviews & survey submissions</p>
+            </div>
+            <button onclick="switchTab('reviews')"
+              class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 transition-colors">
+              <span>Browse All</span>
+              <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </button>
+          </div>
+
+          <div id="liveStreamList" class="space-y-3">
+            <!-- Dynamically Rendered Live Feed Items -->
+            <div class="text-center py-6 text-slate-400 text-xs">Loading live feedback stream...</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- TAB 2: REVIEWS & SURVEYS -->
+    <div id="viewReviews" class="tab-view hidden space-y-6 animate-fadeIn">
+      
+      <!-- Header & Filter Bar -->
+      <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 shadow-lg space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-xl font-bold text-white flex items-center gap-2">
+              <i class="fa-regular fa-comment-dots text-indigo-400"></i>
+              <span>Reviews & Survey Responses</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5">Search and filter customer feedback by sentiment polarity, rating, or topic area.</p>
+          </div>
+          <div>
+            <span id="reviewsCountBadge" class="text-xs font-mono bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-3 py-1.5 rounded-lg font-semibold">
+              0 Entries Found
+            </span>
+          </div>
+        </div>
+
+        <!-- Filter Controls Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+          <!-- Search Input -->
+          <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs"></i>
+            <input type="text" id="reviewSearchInput" oninput="applyReviewFilters()"
+              placeholder="Search by keywords or reviewer name..."
+              class="w-full bg-slate-900/90 border border-slate-700 rounded-xl pl-9 pr-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all">
+          </div>
+
+          <!-- Sentiment Filter Dropdown -->
+          <div>
+            <select id="reviewSentimentSelect" onchange="applyReviewFilters()"
+              class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 transition-all">
+              <option value="">All Sentiments</option>
+              <option value="POSITIVE">Positive Only</option>
+              <option value="NEUTRAL">Neutral Only</option>
+              <option value="NEGATIVE">Negative Only</option>
+            </select>
+          </div>
+
+          <!-- Source Filter Dropdown -->
+          <div>
+            <select id="reviewSourceSelect" onchange="applyReviewFilters()"
+              class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 transition-all">
+              <option value="">All Sources</option>
+              <option value="Customer Survey">Customer Survey</option>
+              <option value="App Store Review">App Store Review</option>
+              <option value="Support Ticket">Support Ticket</option>
+              <option value="Web Feedback">Web Feedback</option>
+              <option value="Amazon Review">Amazon Review</option>
+              <option value="Helpdesk Ticket">Helpdesk Ticket</option>
+              <option value="In-App Survey">In-App Survey</option>
+            </select>
+          </div>
+
+          <!-- Improvement Area Dropdown -->
+          <div>
+            <select id="reviewCategorySelect" onchange="applyReviewFilters()"
+              class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 transition-all">
+              <option value="">All Improvement Areas</option>
+              <option value="UI/UX & Design">UI/UX & Design</option>
+              <option value="Performance & Reliability">Performance & Reliability</option>
+              <option value="Feature Requests & Capability">Feature Requests & Capability</option>
+              <option value="Pricing & Billing">Pricing & Billing</option>
+              <option value="Customer Support & Service">Customer Support & Service</option>
+              <option value="Account & Security">Account & Security</option>
+              <option value="General Experience">General Experience</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Review Cards List Container -->
+      <div id="reviewsListContainer" class="space-y-4">
+        <!-- Rendered Reviews Dynamically -->
+      </div>
+
+    </div>
+
+    <!-- TAB 3: IMPROVEMENT AREAS -->
+    <div id="viewImprovements" class="tab-view hidden space-y-6 animate-fadeIn">
+      
+      <!-- Header Section -->
+      <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-lg">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-xl font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-lightbulb text-amber-400"></i>
+              <span>Actionable Improvement Areas</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-1">
+              AI & NLP extracted improvement opportunities prioritized by customer impact. Update status as product fixes are deployed.
+            </p>
+          </div>
+          <div>
+            <span id="openActionItemsBadge" class="text-xs font-mono bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3.5 py-1.5 rounded-lg font-semibold">
+              0 Open Action Items
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Categories 2-Column Responsive Grid -->
+      <div id="improvementsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Rendered Improvement Cards Dynamically -->
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- MODAL 1: ADD REVIEW OR SURVEY RESPONSE -->
+  <div id="addModal" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+    <div class="bg-[#111827] border border-slate-700/80 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden ring-1 ring-white/10">
+      
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-[#162032]">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-wand-magic-sparkles text-indigo-400 text-sm"></i>
+          <h3 class="font-bold text-base text-white">Add Review or Survey Response</h3>
+        </div>
+        <button onclick="closeModal('addModal')" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-700 transition-colors">
+          <i class="fa-solid fa-xmark text-base"></i>
+        </button>
+      </div>
+
+      <!-- Form Body -->
+      <form id="addReviewForm" onsubmit="handleAddReviewSubmit(event)" class="p-6 space-y-4">
+        
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Reviewer Name -->
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Reviewer / User Name</label>
+            <input type="text" id="addReviewerName" placeholder="e.g. Jane Doe"
+              class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+          </div>
+
+          <!-- Source Channel -->
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Feedback Channel</label>
+            <select id="addSource"
+              class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+              <option value="Customer Survey">Customer Survey</option>
+              <option value="App Store Review">App Store Review</option>
+              <option value="Support Ticket">Support Ticket</option>
+              <option value="Web Feedback">Web Feedback</option>
+              <option value="Helpdesk Ticket">Helpdesk Ticket</option>
+              <option value="In-App Survey">In-App Survey</option>
+              <option value="Social Media">Social Media</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Star Rating (1 to 5) Interactive Pill Selector -->
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1.5">Star Rating (1 to 5)</label>
+          <div class="grid grid-cols-5 gap-2" id="starSelectorContainer">
+            <button type="button" onclick="selectStarRating(1)" class="star-rating-pill py-1.5 rounded-xl text-xs font-bold border border-slate-700 bg-slate-900 text-slate-300">1 ★</button>
+            <button type="button" onclick="selectStarRating(2)" class="star-rating-pill py-1.5 rounded-xl text-xs font-bold border border-slate-700 bg-slate-900 text-slate-300">2 ★</button>
+            <button type="button" onclick="selectStarRating(3)" class="star-rating-pill py-1.5 rounded-xl text-xs font-bold border border-slate-700 bg-slate-900 text-slate-300">3 ★</button>
+            <button type="button" onclick="selectStarRating(4)" class="star-rating-pill py-1.5 rounded-xl text-xs font-bold border-amber-500/80 bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 active-rating">4 ★</button>
+            <button type="button" onclick="selectStarRating(5)" class="star-rating-pill py-1.5 rounded-xl text-xs font-bold border border-slate-700 bg-slate-900 text-slate-300">5 ★</button>
+          </div>
+          <input type="hidden" id="addRatingValue" value="4">
+        </div>
+
+        <!-- Feedback Content Textarea -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-medium text-slate-300">Feedback Content / Review Text *</label>
+            <span id="liveSentimentPreview" class="text-[11px] font-mono px-2 py-0.5 rounded-full border border-slate-700 bg-slate-800 text-slate-400">Neutral</span>
+          </div>
+          <textarea id="addContent" rows="4" required oninput="updateLiveSentimentPreview()"
+            placeholder="Paste or type customer survey response, product review, or feedback statement..."
+            class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 resize-none leading-relaxed"></textarea>
+        </div>
+
+        <!-- Footer Buttons -->
+        <div class="flex items-center justify-end space-x-3 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModal('addModal')"
+            class="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors">
+            Cancel
+          </button>
+          <button type="submit" id="addSubmitBtn"
+            class="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs px-5 py-2.5 rounded-xl shadow-lg shadow-indigo-600/30 transition-all cursor-pointer">
+            <i class="fa-regular fa-paper-plane text-xs"></i>
+            <span>Analyze & Save</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: BULK IMPORT -->
+  <div id="bulkModal" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+    <div class="bg-[#111827] border border-slate-700/80 rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden ring-1 ring-white/10">
+      
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-[#162032]">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-cloud-arrow-up text-indigo-400 text-sm"></i>
+          <h3 class="font-bold text-base text-white">Bulk Import Reviews & Surveys</h3>
+        </div>
+        <button onclick="closeModal('bulkModal')" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-700 transition-colors">
+          <i class="fa-solid fa-xmark text-base"></i>
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div class="p-6 space-y-4 text-xs">
+        <p class="text-slate-400 leading-relaxed">
+          Upload a CSV file or paste formatted CSV records below to run bulk NLP sentiment classification and automated topic clustering.
+        </p>
+
+        <!-- CSV File Drag & Drop Box -->
+        <div class="border-2 border-dashed border-slate-700 hover:border-indigo-500 rounded-xl p-5 text-center transition-colors cursor-pointer bg-slate-900/50"
+             onclick="document.getElementById('csvFileInput').click()">
+          <i class="fa-solid fa-file-csv text-3xl text-indigo-400 mb-2"></i>
+          <p class="font-medium text-slate-200">Click to upload CSV or drag and drop</p>
+          <p class="text-[11px] text-slate-500 mt-0.5">Supports CSV columns: reviewer_name, feedback_text, rating, source</p>
+          <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="handleCsvFileSelected(event)">
+        </div>
+
+        <!-- Paste Textarea -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-medium text-slate-300">Or Paste CSV Lines Directly:</span>
+            <button type="button" onclick="loadSampleCsvInBulk()" class="text-indigo-400 hover:text-indigo-300 text-[11px] font-semibold underline">
+              Insert Sample CSV Rows
+            </button>
+          </div>
+          <textarea id="bulkPasteTextarea" rows="4"
+            placeholder="reviewer_name,source,rating,feedback_text
+Alex,Support Ticket,2,Slow response time and unanswered billing issue.
+Sarah,Customer Survey,5,Wonderful tool and very fast performance!"
+            class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 font-mono text-[11px] text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end space-x-3 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModal('bulkModal')"
+            class="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors">
+            Cancel
+          </button>
+          <button type="button" onclick="processBulkImport()"
+            class="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs px-5 py-2.5 rounded-xl shadow-lg shadow-indigo-600/30 transition-all cursor-pointer">
+            <i class="fa-solid fa-bolt text-xs"></i>
+            <span>Import & Analyze Batch</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: MYSQL / SQLITE DATABASE CONFIG -->
+  <div id="dbModal" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+    <div class="bg-[#111827] border border-slate-700/80 rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden ring-1 ring-white/10">
+      
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-[#162032]">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-database text-emerald-400 text-sm"></i>
+          <h3 class="font-bold text-base text-white">Database Engine & Architecture</h3>
+        </div>
+        <button onclick="closeModal('dbModal')" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-700 transition-colors">
+          <i class="fa-solid fa-xmark text-base"></i>
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div class="p-6 space-y-4 text-xs text-slate-300">
+        <div class="bg-emerald-950/40 border border-emerald-500/30 rounded-xl p-4 flex items-start space-x-3">
+          <i class="fa-solid fa-circle-check text-emerald-400 text-lg mt-0.5 shrink-0"></i>
+          <div>
+            <h4 class="font-bold text-sm text-emerald-300" id="dbModalEngineTitle">Active Engine: MySQL / SQLite Hybrid</h4>
+            <p class="text-slate-300 mt-1 leading-relaxed">
+              The FastAPI backend connects through <b>SQLAlchemy 2.0 ORM</b>. When MySQL is available on port 3306, it attaches directly; otherwise, it seamlessly persists data to high-performance local SQLite storage.
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <h4 class="font-bold text-white text-xs flex items-center gap-1.5">
+            <i class="fa-solid fa-server text-indigo-400"></i>
+            <span>FastAPI REST Endpoints:</span>
+          </h4>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 font-mono text-[11px] text-indigo-300 space-y-1">
+            <div>GET /api/analytics/overview &nbsp; (KPI Analytics & Trends)</div>
+            <div>GET /api/feedback &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (Paginated Feedback Feed)</div>
+            <div>POST /api/feedback &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (Analyze & Insert Feedback)</div>
+            <div>GET /api/analytics/issues &nbsp;&nbsp;&nbsp;&nbsp; (Extracted Priority Issues)</div>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+          <span class="text-slate-400">Need fresh test records?</span>
+          <button onclick="seedSampleData(); closeModal('dbModal');"
+            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold transition-colors cursor-pointer">
+            <i class="fa-solid fa-rotate-right mr-1"></i> Reset / Re-Seed Database
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2.5 pointer-events-none"></div>
+
+  <!-- Application Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

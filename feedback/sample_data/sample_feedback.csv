@@ -1,0 +1,19 @@
+feedback_text,product_or_service,category,rating,source,submitted_at
+"The product works perfectly and the support team was super helpful when I had setup questions.",Mobile App,Customer Support,5,App Store,2026-10-01 10:15:00
+"My delivery arrived late and customer support did not respond to my emails for three days.",E-Commerce Platform,Delivery and Shipping,1,Website Review,2026-10-01 11:30:00
+"The product was delivered yesterday and includes the standard accessories as advertised.",Electronics,Delivery and Shipping,3,Amazon Review,2026-10-02 09:00:00
+"Absolutely love the new user interface! It is smooth, fast, and easy to navigate.",SaaS Dashboard,User Experience,5,In-App Survey,2026-10-02 14:20:00
+"The subscription pricing is too expensive for small businesses. Needs a cheaper entry tier.",Cloud Service,Pricing,2,Email Survey,2026-10-03 16:45:00
+"Frequent crashes after the latest software update. Needs urgent bug fixes for stability.",Mobile App,Performance,1,Google Play,2026-10-04 08:10:00
+"Customer service agent Sarah resolved my refund request within five minutes. Excellent service!",E-Commerce Platform,Customer Support,5,Live Chat,2026-10-04 12:00:00
+"Packaging was damaged upon arrival, but the item inside remained intact and functioning.",Home Decor,Delivery and Shipping,3,Website Review,2026-10-05 13:15:00
+"The website search feature is very slow and often returns irrelevant search results.",E-Commerce Platform,Website Usability,2,In-App Survey,2026-10-05 17:50:00
+"Outstanding build quality! Feels premium and durable. Worth every penny.",Electronics,Product Quality,5,Trustpilot,2026-10-06 11:05:00
+"The checkout page keeps throwing error codes when processing credit card payments.",E-Commerce Platform,Website Usability,1,Helpdesk Ticket,2026-10-06 15:40:00
+"Standard account features are decent, but export functionality is locked behind enterprise plans.",SaaS Dashboard,Feature Requests,3,User Forum,2026-10-07 09:30:00
+"System uptime is impressive. We experienced 99.9% availability throughout the entire month.",Cloud Service,Reliability,5,Customer Interview,2026-10-07 14:10:00
+"Hidden fees were added at checkout without clear explanation. Very disappointing pricing policy.",E-Commerce Platform,Pricing,1,Trustpilot,2026-10-08 10:00:00
+"Received standard confirmation email after submitting request. Waiting for further update.",Mobile App,Customer Support,3,Email Survey,2026-10-08 16:25:00
+"The battery life exceeds expectations. Easily lasts two full days on a single charge.",Electronics,Product Quality,5,Amazon Review,2026-10-09 11:50:00
+"The analytics reports are difficult to export to PDF format. Please add one-click export.",SaaS Dashboard,Feature Requests,2,In-App Survey,2026-10-09 15:30:00
+"Prompt response from support agent, but the technical issue is still unresolved after 48 hours.",Cloud Service,Customer Support,2,Helpdesk Ticket,2026-10-10 08:45:00

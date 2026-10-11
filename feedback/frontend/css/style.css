@@ -1,0 +1,181 @@
+/* ============================================================
+   Sentima v1.0 – Modern Dark Theme CSS & Enhancements
+   ============================================================ */
+
+:root {
+  --bg-main: #0b0f19;
+  --card-bg: rgba(30, 41, 59, 0.7);
+  --card-border: rgba(51, 65, 85, 0.8);
+  --primary-indigo: #6366f1;
+  --primary-purple: #9333ea;
+  --accent-pink: #ec4899;
+  --color-positive: #10b981;
+  --color-neutral: #f59e0b;
+  --color-negative: #ef4444;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #0b0f19;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Nav Tabs */
+.nav-tab.active {
+  background: #4f46e5 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.35);
+}
+
+.mobile-nav-tab.active {
+  background: #4f46e5;
+  color: #ffffff;
+}
+
+/* Star Rating Pills */
+.star-rating-pill {
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+.star-rating-pill:hover {
+  border-color: #f59e0b;
+  color: #fbbf24;
+}
+.star-rating-pill.active-rating {
+  background-color: #f59e0b !important;
+  color: #020617 !important;
+  border-color: #f59e0b !important;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+  font-weight: 800 !important;
+}
+
+/* KPI Cards */
+.kpi-card {
+  position: relative;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.45);
+}
+
+/* Review Cards */
+.review-card {
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+.review-card:hover {
+  border-color: #475569 !important;
+  transform: translateY(-1px);
+}
+
+/* VADER Score Progress Bar */
+.vader-progress-track {
+  height: 6px;
+  background: #1e293b;
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+}
+.vader-progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.5s ease;
+}
+
+/* Badges */
+.badge-pos {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.28);
+}
+.badge-neu {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.28);
+}
+.badge-neg {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.28);
+}
+
+/* Issue Action Card Status Button Toggles */
+.status-btn {
+  transition: all 0.15s ease;
+}
+.status-btn.active-open {
+  background: #f59e0b !important;
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+.status-btn.active-progress {
+  background: #6366f1 !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+.status-btn.active-resolved {
+  background: #10b981 !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+/* Modals */
+.modal-backdrop {
+  backdrop-filter: blur(8px);
+}
+
+/* Toasts */
+.toast {
+  pointer-events: auto;
+  min-width: 280px;
+  max-width: 420px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  animation: slideIn 0.25s ease-out forwards;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
